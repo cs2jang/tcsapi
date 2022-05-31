@@ -1,9 +1,11 @@
 import pickle
 from pathlib import Path
-
-import streamlit_authenticator as stauth
+from datetime import datetime, date, timedelta
+import plotly.express as px
 import streamlit as st
-
+import streamlit_authenticator as stauth
+from streamlit_option_menu import option_menu
+from tcsapi import tcsapi
 
 st.set_page_config(page_title="Analysis Traffic", page_icon=":signal_strength:", layout="wide")
 name_list = ['관리자', '사용자']
@@ -24,18 +26,34 @@ if authentication_status == False:
 elif authentication_status == None:
     st.warning('Please enter your username and password')
 elif authentication_status:
-
-    authenticator.logout("Logout", "sidebar")
-    st.sidebar.title(f"Welcome {name}")
-    st.sidebar.header("Please Filter Here:")
-
     with st.container():
+        authenticator.logout("Logout", "main")
+        st.title(f"Welcome {name}")
+        selected = option_menu (
+            menu_title = None, 
+            options=["Home", "Projects", "Contact"],
+            default_index=0, 
+            orientation="horizontal"
+        )
+        
+    with st.container():
+        tcs = tcsapi()
         st.subheader("Hi, I am Sven :wave:")
         st.title("A Data Analyst From Germany")
         st.write(
             "I am passionate about finding ways to use Python and VBA to be more efficient and effective in business settings."
         )
-        st.write("[Learn More >](https://pythonandvba.com)")
+        max_value = datetime.now() + timedelta(days=-3)
+        min_value = date(2003, 1, 1)
+        dates = st.date_input("Select Dates", value=(), min_value=min_value, max_value=max_value)
+        if st.button('Get Data') and len(dates) == 2:
+            d_start = dates[0].strftime("%Y%m%d")
+            d_end = dates[1].strftime("%Y%m%d")
+            print(d_start, d_end)
+            df_tcs = tcs.getDataFrame(d_start, d_end)
+            st.dataframe(df_tcs)
+            fig = px.scatter(df_tcs, x="req_date", y="sum", color='sum')
+            st.plotly_chart(fig, use_container_width=True)
 
 
     with st.container():
