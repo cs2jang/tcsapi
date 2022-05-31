@@ -12,11 +12,14 @@ Original file is located at
 http://data.ex.co.kr/openapi/trafficapi/nationalTrafficVolumn
 ?key=8440600649&type=json&sumDate=20220517
 """
+from msilib.schema import Error
+import string
 import requests
 import json
 import pandas as pd
 from datetime import date, timedelta
 import time
+import sqlite3
 
 
 class tcsapi:
@@ -25,6 +28,9 @@ class tcsapi:
     self.__rtype = "json"
     self.__rkey = "8440600649"
     self.__headers = {'Content-Type': 'application/json', 'charset': 'UTF-8', 'Accept': '*/*'}
+    self.__DB = "tscdb.db"
+    self.__TCSDATA = "tcsdata"
+    self.sleep_time = 0.5
 
   def daterange(self, start_date, end_date):
       for n in range(int((end_date - start_date).days)):
@@ -38,21 +44,61 @@ class tcsapi:
       result.append(single_date.strftime("%Y%m%d"))
     return result
 
-  def getDataFrame(self, from_date, to_date):
-    req_dates = self.dateGenerator(from_date, to_date)
-    df_result = pd.DataFrame(columns=['Date', 'SUM'])
-    for req_d in req_dates:
-      rdate = str(req_d)
-      params = {'key':self.__rkey, 'type':self.__rtype, 'sumDate':rdate}
-      res = requests.get(self.__url, headers=self.__headers, params=params)
-      if res.status_code == 200:
-        data = eval(res.text)
-        df_temp = pd.DataFrame(data['list'])
-        df_result = df_result.append({"Date":req_d, 'SUM': df_temp['trafficVolumn'].astype(int).sum()}, ignore_index = True)
-      else:
-        print(res.status_code)
-      time.sleep(1)
-    return df_result
+  def checkData(self, req_date: str) -> int:
+    try:
+      conn = sqlite3.connect(self.__DB)
+      cur = conn.cursor()
+      query = f"select exists(select 1 from {self.__TCSDATA} where req_date = '{req_date}' limit 1)"
+      cur.execute(query)
+      exist = cur.fetchall()[0][0]
+      return exist
+    except Exception as err:
+        print('Query Failed: %s\nError: %s' % (query, str(err)))
+        return 0
+    finally:
+        conn.close()
+
+  def getDataFrame(self, from_date: str, to_date: str):
+    try:
+      req_dates = self.dateGenerator(from_date, to_date)
+      df_result = pd.DataFrame(columns=['Date', 'SUM'])
+      conn = sqlite3.connect(self.__DB)
+      cur = conn.cursor()
+      for req_d in req_dates:
+        rdate = str(req_d)
+        # if data exists in db
+        query = f"select exists(select 1 from {self.__TCSDATA} where req_date = '{rdate}' limit 1)"
+        cur.execute(query)
+        exist = cur.fetchall()[0][0]
+        if exist:
+          query = f"select sum from {self.__TCSDATA} where req_date = '{rdate}'"
+          cur.execute(query)
+          sum_data = cur.fetchall()[0][0]
+          df_result = df_result.append({"Date":req_d, 'SUM': sum_data}, ignore_index = True)
+        else:
+          params = {'key':self.__rkey, 'type':self.__rtype, 'sumDate':rdate}
+          res = requests.get(self.__url, headers=self.__headers, params=params)
+          if res.status_code == 200:
+            data = eval(res.text)
+            df_temp = pd.DataFrame(data['list'])
+            sum_data = df_temp['trafficVolumn'].astype(int).sum()
+            df_result = df_result.append({"Date":req_d, 'SUM': sum_data}, ignore_index = True)
+            cur.execute(f"insert into {self.__TCSDATA} values ('{req_d}', {sum_data})")
+            conn.commit()
+          else:
+            print(res.status_code)
+        time.sleep(self.sleep_time)      
+      return df_result
+    except Exception as err:
+        print('Failed: %s' % str(err))
+        return 0
+    finally:
+      conn.close()
+
+
+if __name__ == "__main__":
+  tcs = tcsapi()
+  print(tcs.getDataFrame("20220520", "20220527"))
 
 # df_result = getDataFrame("20220523", "20220527")
 # df_result
