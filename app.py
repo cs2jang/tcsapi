@@ -38,11 +38,8 @@ elif authentication_status:
         
     with st.container():
         tcs = tcsapi()
-        st.subheader("Hi, I am Sven :wave:")
-        st.title("A Data Analyst From Germany")
-        st.write(
-            "I am passionate about finding ways to use Python and VBA to be more efficient and effective in business settings."
-        )
+        st.subheader(f"Hi, {name} :wave:")
+        st.title("TCS Data")
         max_value = datetime.now() + timedelta(days=-3)
         min_value = date(2003, 1, 1)
         dates = st.date_input("Select Dates", value=(), min_value=min_value, max_value=max_value)
@@ -64,16 +61,11 @@ elif authentication_status:
             st.write("##")
             st.write(
                 """
-                On my YouTube channel I am creating tutorials for people who:
-                - are looking for a way to leverage the power of Python in their day-to-day work.
-                - are struggling with repetitive tasks in Excel and are looking for a way to use Python and VBA.
-                - want to learn Data Analysis & Data Science to perform meaningful and impactful analyses.
-                - are working with Excel and found themselves thinking - "there has to be a better way."
-                If this sounds interesting to you, consider subscribing and turning on the notifications, so you don’t miss any content.
+                left column space.
                 """
             )
         with right_column:
-            st.write("[YouTube Channel >](https://youtube.com/c/CodingIsFun)")
+            st.write("right column space")
             
         hide_st_style = """
                 <style>
