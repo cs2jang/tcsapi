@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from msilib.schema import Error
 import requests
 import pandas as pd
 from datetime import date, timedelta
