@@ -20,6 +20,14 @@ authenticator = stauth.Authenticate(
     )
 
 name, authentication_status, username = authenticator.login('Login', 'main')
+hide_st_style = """
+                <style>
+                #MainMenu {visibility: hidden;}
+                footer {visibility: hidden;}
+                header {visibility: hidden;}
+                </style>
+                """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 
 if authentication_status == False:
     st.error('Username/password is incorrect')
@@ -50,6 +58,7 @@ elif authentication_status:
             df_tcs = tcs.getDataFrame(d_start, d_end)
             st.dataframe(df_tcs)
             fig = px.scatter(df_tcs, x="req_date", y="sum", color='sum')
+            fig.update_traces(opacity=0.8, marker=dict(showscale=False, reversescale=True, cmin=6, size=20))
             st.plotly_chart(fig, use_container_width=True)
 
 
@@ -67,11 +76,4 @@ elif authentication_status:
         with right_column:
             st.write("right column space")
             
-        hide_st_style = """
-                <style>
-                #MainMenu {visibility: hidden;}
-                footer {visibility: hidden;}
-                header {visibility: hidden;}
-                </style>
-                """
-        st.markdown(hide_st_style, unsafe_allow_html=True)
+        
