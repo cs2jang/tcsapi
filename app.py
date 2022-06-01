@@ -26,6 +26,7 @@ if authentication_status == False:
 elif authentication_status == None:
     st.warning('Please enter your username and password')
 elif authentication_status:
+    """
     with st.container():
         authenticator.logout("Logout", "main")
         st.title(f"Welcome {name}")
@@ -35,6 +36,7 @@ elif authentication_status:
             default_index=0, 
             orientation="horizontal"
         )
+    """
         
     with st.container():
         tcs = tcsapi()
