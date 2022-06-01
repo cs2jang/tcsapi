@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 import plotly.express as px
 import streamlit as st
 import streamlit_authenticator as stauth
-from streamlit_option_menu import option_menu
+# from streamlit_option_menu import option_menu
 from tcsapi import tcsapi
 
 st.set_page_config(page_title="Analysis Traffic", page_icon=":signal_strength:", layout="wide")
