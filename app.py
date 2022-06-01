@@ -28,8 +28,6 @@ elif authentication_status == None:
 elif authentication_status:
     """
     with st.container():
-        authenticator.logout("Logout", "main")
-        st.title(f"Welcome {name}")
         selected = option_menu (
             menu_title = None, 
             options=["Home", "Projects", "Contact"],
@@ -39,6 +37,8 @@ elif authentication_status:
     """
         
     with st.container():
+        st.title(f"Welcome {name}")
+        authenticator.logout("Logout", "main")
         tcs = tcsapi()
         st.subheader(f"Hi, {name} :wave:")
         st.title("TCS Data")
