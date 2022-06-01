@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 import plotly.express as px
 import streamlit as st
 import streamlit_authenticator as stauth
-# from streamlit_option_menu import option_menu
+from streamlit_option_menu import option_menu
 from tcsapi import tcsapi
 
 st.set_page_config(page_title="Analysis Traffic", page_icon=":signal_strength:", layout="wide")
@@ -26,15 +26,13 @@ if authentication_status == False:
 elif authentication_status == None:
     st.warning('Please enter your username and password')
 elif authentication_status:
-    """
     with st.container():
         selected = option_menu (
             menu_title = None, 
-            options=["Home", "Projects", "Contact"],
+            options=["TCS Data Home", "Machine Learning Projects", "Contact"],
             default_index=0, 
             orientation="horizontal"
         )
-    """
         
     with st.container():
         st.title(f"Welcome {name}")
