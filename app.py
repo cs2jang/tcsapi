@@ -1,4 +1,5 @@
 import pickle
+import time
 from pathlib import Path
 from datetime import datetime, date, timedelta
 import plotly.express as px
@@ -6,6 +7,11 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from streamlit_option_menu import option_menu
 from tcsapi import tcsapi
+
+
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
 
 st.set_page_config(page_title="Analysis Traffic", page_icon=":signal_strength:", layout="wide")
 name_list = ['관리자', '사용자']
@@ -54,9 +60,17 @@ elif authentication_status:
         if st.button('Get Data') and len(dates) == 2:
             d_start = dates[0].strftime("%Y%m%d")
             d_end = dates[1].strftime("%Y%m%d")
-            print(d_start, d_end)
+            # with st.spinner('Wait for it...'):
             df_tcs = tcs.getDataFrame(d_start, d_end)
             st.dataframe(df_tcs)
+            csv = convert_df(df_tcs)
+            st.download_button(
+                "Press to Download",
+                csv,
+                "file.csv",
+                "text/csv",
+                key='download-csv'
+            )
             fig = px.scatter(df_tcs, x="req_date", y="sum", color='sum')
             fig.update_traces(opacity=0.8, marker=dict(showscale=False, reversescale=True, cmin=6, size=15))
             st.plotly_chart(fig, use_container_width=True)
