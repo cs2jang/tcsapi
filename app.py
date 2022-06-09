@@ -76,6 +76,13 @@ elif authentication_status:
                 key='download-csv'
             )
             fig = px.scatter(df_tcs, x="req_date", y="sum", color='sum')
+            fig.update_layout(
+                title = 'Time Series with TCS Data',
+                xaxis_tickformat = '%d %B (%a)<br>%Y',
+                yaxis = dict(
+                    tickformat="d"
+                )
+            )
             fig.update_traces(opacity=0.8, marker=dict(showscale=False, reversescale=True, cmin=6, size=15))
             st.plotly_chart(fig, use_container_width=True)
 
