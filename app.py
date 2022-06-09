@@ -13,6 +13,10 @@ from tcsapi import tcsapi
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
+@st.cache
+def getTcsData(d_start, d_end):
+    return tcs.getDataFrame(d_start, d_end)
+
 st.set_page_config(page_title="Analysis Traffic", page_icon=":signal_strength:", layout="wide")
 name_list = ['관리자', '사용자']
 username_list = ['admin', 'stcuser']
@@ -61,7 +65,7 @@ elif authentication_status:
             d_start = dates[0].strftime("%Y%m%d")
             d_end = dates[1].strftime("%Y%m%d")
             # with st.spinner('Wait for it...'):
-            df_tcs = tcs.getDataFrame(d_start, d_end)
+            df_tcs = getTcsData(d_start, d_end)
             st.dataframe(df_tcs)
             csv = convert_df(df_tcs)
             st.download_button(
@@ -74,7 +78,6 @@ elif authentication_status:
             fig = px.scatter(df_tcs, x="req_date", y="sum", color='sum')
             fig.update_traces(opacity=0.8, marker=dict(showscale=False, reversescale=True, cmin=6, size=15))
             st.plotly_chart(fig, use_container_width=True)
-
 
     with st.container():
         st.write("---")
