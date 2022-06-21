@@ -42,7 +42,7 @@ class tcsapi:
     finally:
         conn.close()
 
-  def getDataFrame(self, from_date: str, to_date: str):
+  def getDataFrame(self, from_date: str, to_date: str, download_option=False):
     conn = sqlite3.connect(self.__DB)
     try:
       date_list = []
@@ -57,11 +57,18 @@ class tcsapi:
         exist = cur.fetchall()[0][0]
         if exist:
           date_list.append(rdate)
+          if download_option:
+            params = {'key':self.__rkey, 'type':self.__rtype, 'sumDate':rdate}
+            res = requests.get(self.__url, headers=self.__headers, params=params)
+            if res.status_code == 200:
+              data = eval(res.text)
+              df_temp = pd.DataFrame(data['list'])
+              sum_data = df_temp['trafficVolumn'].astype(int).sum()
+              cur.execute(f"update {self.__TCSDATA} set sum={sum_data} where req_date = '{rdate}'")
+              conn.commit()
+            else:
+              print(res.status_code)
           continue
-          # query = f"select sum from {self.__TCSDATA} where req_date = '{rdate}'"
-          # cur.execute(query)
-          # sum_data = cur.fetchall()[0][0]
-          # df_result = df_result.append({"Date":req_d, 'SUM': sum_data}, ignore_index = True)
         else:
           time.sleep(self.sleep_time)    
           params = {'key':self.__rkey, 'type':self.__rtype, 'sumDate':rdate}
@@ -70,7 +77,6 @@ class tcsapi:
             data = eval(res.text)
             df_temp = pd.DataFrame(data['list'])
             sum_data = df_temp['trafficVolumn'].astype(int).sum()
-            # df_result = df_result.append({"Date":req_d, 'SUM': sum_data}, ignore_index = True)
             cur.execute(f"insert into {self.__TCSDATA} values ('{req_d}', {sum_data})")
             conn.commit()
           else:

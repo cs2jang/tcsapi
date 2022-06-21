@@ -1,5 +1,4 @@
 import pickle
-import time
 from pathlib import Path
 from datetime import datetime, date, timedelta
 import plotly.express as px
@@ -13,9 +12,8 @@ from tcsapi import tcsapi
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
-@st.cache
-def getTcsData(d_start, d_end):
-    return tcs.getDataFrame(d_start, d_end)
+def getTcsData(d_start, d_end, d_option=False):
+    return tcs.getDataFrame(d_start, d_end, d_option)
 
 st.set_page_config(page_title="Analysis Traffic", page_icon=":signal_strength:", layout="wide")
 name_list = ['관리자', '사용자']
@@ -61,11 +59,18 @@ elif authentication_status:
         max_value = datetime.now() + timedelta(days=-3)
         min_value = date(2003, 1, 1)
         dates = st.date_input("Select Dates", value=(), min_value=min_value, max_value=max_value)
+        download_type = st.radio(
+            "Choose data down load type (Load data is much faster)",
+            ("Load data", "Download new data")
+        )
         if st.button('Get Data') and len(dates) == 2:
             d_start = dates[0].strftime("%Y%m%d")
             d_end = dates[1].strftime("%Y%m%d")
-            # with st.spinner('Wait for it...'):
-            df_tcs = getTcsData(d_start, d_end)
+            with st.spinner('Wait for it...'):
+                if download_type == "Download new data":
+                    df_tcs = getTcsData(d_start, d_end, True)
+                else:
+                    df_tcs = getTcsData(d_start, d_end, False)
             st.dataframe(df_tcs)
             csv = convert_df(df_tcs)
             st.download_button(
