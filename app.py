@@ -50,7 +50,7 @@ elif authentication_status:
     with st.container():
         selected = option_menu (
             menu_title = None, 
-            options=["TCS Data Home", "Machine Learning Projects", "Contact"],
+            options=["TCS Data", "Oil Price data", "Machine Learning Projects", "Contact"],
             default_index=0, 
             orientation="horizontal"
         )
