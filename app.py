@@ -8,6 +8,11 @@ from streamlit_option_menu import option_menu
 from tcsapi import tcsapi
 
 
+def getDays(rdate):
+    days=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    date = datetime.strptime(rdate, "%Y%m%d")
+    return days[date.weekday()]
+
 @st.cache
 def convert_df(df):
     return df.to_csv().encode('utf-8')
@@ -71,6 +76,7 @@ elif authentication_status:
                     df_tcs = getTcsData(d_start, d_end, True)
                 else:
                     df_tcs = getTcsData(d_start, d_end, False)
+            df_tcs['day'] = df_tcs['req_date'].apply(getDays)
             st.dataframe(df_tcs)
             csv = convert_df(df_tcs)
             st.download_button(
@@ -80,7 +86,7 @@ elif authentication_status:
                 "text/csv",
                 key='download-csv'
             )
-            fig = px.scatter(df_tcs, x="req_date", y="sum", color='sum')
+            fig = px.scatter(df_tcs, x="req_date", y="sum", color='sum', hover_data=['day'])
             fig.update_layout(
                 title = 'Time Series with TCS Data',
                 xaxis_tickformat = '%d %B (%a)<br>%Y',
